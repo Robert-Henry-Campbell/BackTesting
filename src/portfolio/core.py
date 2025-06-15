@@ -73,7 +73,7 @@ def identify_windows(df, window_size):
 doctest.run_docstring_examples(identify_windows, globals())
 
 
-def calc_window_returns(df, window_size, date_column, portfolio_columns = [] ):
+def calc_window_returns(df, window_size, date_column, portfolio_columns=None):
     """
     calculates portfolio return over all possible rolling windows of a given size
 
@@ -93,6 +93,7 @@ def calc_window_returns(df, window_size, date_column, portfolio_columns = [] ):
     ...  })) 
     True
     """
+    portfolio_columns = portfolio_columns or []
     df = df.copy()
     windows = identify_windows(df, window_size=window_size)
     window_dates = []
