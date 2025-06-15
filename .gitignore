@@ -1,0 +1,19 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Virtual-envs
+.venv/
+
+# VS Code
+.vscode/
+
+# Test & build artefacts
+.pytest_cache/
+dist/
+build/
+
+# Data (keep raw CSVs out of the repo)
+data/
+
+notes/

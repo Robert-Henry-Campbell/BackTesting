@@ -1,0 +1,22 @@
+[build-system]                        # PEP 517 section (mandatory)
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]                             # PEP 621 metadata
+name = "portfolio-project"
+version = "0.1.0"
+description = "Rolling-window portfolio simulation utilities"
+authors = [{name="Your Name", email="you@example.com"}]
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+]
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.setuptools]                     # Tell setuptools you use src layout
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

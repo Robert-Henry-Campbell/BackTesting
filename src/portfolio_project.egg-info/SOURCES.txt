@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+src/portfolio/__init__.py
+src/portfolio/core.py
+src/portfolio/report.py
+src/portfolio_project.egg-info/PKG-INFO
+src/portfolio_project.egg-info/SOURCES.txt
+src/portfolio_project.egg-info/dependency_links.txt
+src/portfolio_project.egg-info/requires.txt
+src/portfolio_project.egg-info/top_level.txt
