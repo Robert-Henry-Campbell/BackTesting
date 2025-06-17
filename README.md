@@ -44,6 +44,9 @@ You can run the main analysis script via:
 
 ```bash
 python main.py <csv_path> [options]
+
+#example run:
+python main.py data/processed/data_for_futures.csv --window 240 --leverage 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.50 2.75 3.0 --out data/outputs/run_17.6.25.csv
 ```
 
 ### Required Positional Argument
@@ -55,7 +58,7 @@ python main.py <csv_path> [options]
 ### Optional Arguments
 
 - `--window <int>`  
-  Size of the rolling window (in rows).  
+  Size of the rolling window (in rows = months).  
   **Default:** `252`
 
 - `--leverage <float float ...>`  
@@ -66,6 +69,7 @@ python main.py <csv_path> [options]
 - `--datecol <str>`  
   Name of the column to use for date labels.  
   **Default:** `"date"`
+
 
 - `--out <filename>`  
   Output path for the CSV containing rolling returns.  
