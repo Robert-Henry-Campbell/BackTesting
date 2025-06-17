@@ -1,3 +1,5 @@
+"""Tests for dividend support in :func:`simulate_portfolio`."""
+
 import pandas as pd
 import pytest
 
