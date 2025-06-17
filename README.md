@@ -107,7 +107,7 @@ portfolio_project/
 │     ├─ __init__.py
 │     ├─ core.py                               ← simulate_portfolio, identify_windows, calc_window_returns
 │     ├─ plots.py                              ← boxplot_returns and visualisation utilities
-│     └─ report.py                             ← (future) output formatting or summarisation
+│     └─ report.py                             ← boxplot_returns and visualisation utilities
 │
 ├─ tests/
 │  ├─ test_smoke.py                            ← integration test matching the manual run
