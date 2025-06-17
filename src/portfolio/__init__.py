@@ -9,6 +9,10 @@ from .core import (
     calc_window_returns,
 )
 
+from .report import(
+        boxplot_returns,
+)
+
 __all__ = [
     "simulate_portfolio",
     "identify_windows",
