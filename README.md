@@ -46,7 +46,7 @@ You can run the main analysis script via:
 python main.py <csv_path> [options]
 
 #example run:
-python main.py data/processed/data_for_futures.csv --window 240 --leverage 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.50 2.75 3.0 --out data/outputs/run_17.6.25.csv
+python main.py data/processed/data_for_futures.csv --window 240 --leverage 0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.50 2.75 3.0 --out data/outputs/
 ```
 
 ### Required Positional Argument

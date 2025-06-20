@@ -13,6 +13,11 @@ from .report import(
         boxplot_returns,
 )
 
+from .utils import(
+    to_native,
+    name_run_output
+)
+
 __all__ = [
     "simulate_portfolio",
     "identify_windows",

@@ -11,5 +11,7 @@ def boxplot_returns(returns_df: pd.DataFrame, portfolio_cols):
     portfolio_cols : list[str]
     """
     ax = returns_df[portfolio_cols].boxplot()
-    ax.set_ylabel("Return")
-    return ax
+    ax.set_ylabel("Total Return")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)  # Tilt x labels
+    fig = ax.get_figure()
+    return fig

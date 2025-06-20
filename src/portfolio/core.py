@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import List, Optional
 import doctest
+from .utils import to_native
 
 
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
@@ -101,8 +102,9 @@ def calc_window_returns(df, window_size, date_column, portfolio_columns: Optiona
     for date_idx, window in enumerate(windows):
         start_idx = window[0]
         end_idx = window[1]
-        window_dates.append([df.iloc[start_idx, df.columns.get_loc(date_column)],
-                             df.iloc[end_idx, df.columns.get_loc(date_column)]])
+        start_val = df.iloc[start_idx, df.columns.get_loc(date_column)]
+        end_val = df.iloc[end_idx, df.columns.get_loc(date_column)]
+        window_dates.append([to_native(start_val),to_native(end_val)] )
     
     out = pd.DataFrame({
         'window_dates': window_dates,
