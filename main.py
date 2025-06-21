@@ -26,9 +26,14 @@ def main(args):
         fig = boxplot_returns(
             returns,
             [f"portfolio_{lev}x_returns" for lev in args.leverage],
+            showfliers=False
         )
         fig.show()
         fig.savefig(name_run_output('returns',args.out, args.leverage, "png"))
+        log_fig = boxplot_returns(returns, 
+                                  [f"portfolio_{lev}x_returns" for lev in args.leverage],
+                                  log = True)
+
     pass
 
 if __name__ == "__main__":
