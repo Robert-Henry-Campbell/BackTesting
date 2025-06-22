@@ -1,7 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from .core import identify_windows, simulate_window, detect_bust
+from .core import (
+    identify_windows,
+    simulate_window,
+    detect_bust,
+    simulate_window_with_dividends,
+)
 from .report import boxplot_returns
 from .utils import name_run_output
 
@@ -20,7 +25,12 @@ def main(args):
 
     windows = identify_windows(data, window_size=args.window)
 
-    cols = [args.datecol] + [f"portfolio_{lev}x" for lev in args.leverage]
+    has_dividend = getattr(args, "dividendcol", None) is not None
+
+    cols = [args.datecol]
+    if has_dividend:
+        cols.append("1x_dividend")
+    cols += [f"portfolio_{lev}x" for lev in args.leverage]
     returns_df = pd.DataFrame(columns=cols)
     annualised_returns_df = pd.DataFrame(columns=cols)
 
@@ -55,12 +65,42 @@ def main(args):
 
                 df.loc[df[args.datecol] == win_label, f"portfolio_{lev}x"] = value
 
+    if has_dividend:
+        for start_idx, end_idx in windows:
+            prices = data.iloc[
+                start_idx : end_idx + 1,
+                data.columns.get_loc(args.pricecol),
+            ]
+            divs = data.iloc[
+                start_idx : end_idx + 1,
+                data.columns.get_loc(args.dividendcol),
+            ].copy()
+            divs.iloc[0] = 0.0
+
+            V_path = simulate_window_with_dividends(prices, divs)
+            window_ret = V_path[-1] / V_path[0] - 1.0
+            years = (len(prices) - 1) / periods_per_year
+            window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
+
+            win_label = data.loc[start_idx, args.datecol]
+
+            for df, value in (
+                (returns_df, window_ret),
+                (annualised_returns_df, window_ann),
+            ):
+                if win_label not in df[args.datecol].values:
+                    df.loc[len(df), args.datecol] = win_label
+
+                df.loc[df[args.datecol] == win_label, "1x_dividend"] = value
+
     returns_df[args.datecol] = pd.to_datetime(returns_df[args.datecol])
     annualised_returns_df[args.datecol] = pd.to_datetime(
         annualised_returns_df[args.datecol]
     )
 
     value_cols = [f"portfolio_{lev}x" for lev in args.leverage]
+    if has_dividend:
+        value_cols = ["1x_dividend"] + value_cols
     returns_df[value_cols] = returns_df[value_cols].astype(float)
     annualised_returns_df[value_cols] = annualised_returns_df[value_cols].astype(float)
 

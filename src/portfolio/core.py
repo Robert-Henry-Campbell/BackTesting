@@ -35,6 +35,33 @@ def simulate_window(
     return V
 
 
+def simulate_window_with_dividends(
+    prices: pd.Series, dividends: pd.Series, init_value: float = 1.0
+) -> np.ndarray:
+    """Simulate unleveraged equity with reinvested dividends.
+
+    Parameters
+    ----------
+    prices : pd.Series
+        Settlement prices from window start *through* window end.
+    dividends : pd.Series
+        Dividend amounts aligned with ``prices``. The value at index ``0`` is
+        ignored because it corresponds to the starting point of the window.
+    init_value : float, optional
+        Starting portfolio value, by default ``1.0``.
+    """
+
+    V = np.empty(len(prices), dtype=float)
+    V[0] = init_value
+
+    for i in range(len(prices) - 1):
+        P_i = prices.iloc[i]
+        cash = prices.iloc[i + 1] - P_i + dividends.iloc[i + 1]
+        V[i + 1] = V[i] * (1.0 + cash / P_i)
+
+    return V
+
+
 def detect_bust(equity_path: np.ndarray) -> bool:
     """Return ``True`` if ``equity_path`` hits zero or below.
 

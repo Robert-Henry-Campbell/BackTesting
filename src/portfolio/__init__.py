@@ -10,6 +10,7 @@ from .core import (
     simulate_window,
     detect_bust,
     simulate_leveraged_series,
+    simulate_window_with_dividends,
     window_return,
     annualise,
 )
