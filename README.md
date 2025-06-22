@@ -23,18 +23,13 @@ analyse cumulative returns—ready for research, dashboards, or quant pipelines.
 git clone https://github.com/<your-org>/portfolio-project.git
 cd portfolio-project
 
-# 2  Create & activate a virtual env  (PowerShell shown; adjust for your shell)
-python -m venv .venv
-.\.venv\Scripts\Activate
+# 2  Set up the Python environment
+bash scripts/setup_env.sh
 
-# 3  Install package + runtime deps (editable)
-pip install -e .
-
-# 4  Run doctests & unit tests
-pip install pytest
+# 3  Run doctests & unit tests
 pytest -q
 
-# 5  Run the CLI on your own CSV
+# 4  Run the CLI on your own CSV
 python main.py data/sp500_real.csv --window 252 --leverage 1 2 --plot
 ```
 
