@@ -2,7 +2,7 @@
 import argparse
 import pandas as pd
 from portfolio import simulate_portfolio, calc_window_returns, boxplot_returns, name_run_output, identify_windows, simulate_window
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 
@@ -111,11 +111,21 @@ def main(args):
         )
         fig.show()
         fig.savefig(name_run_output('returns',args.out, args.leverage, "png"))
+        plt.close(fig)
+
         log_fig = boxplot_returns(returns_df, 
                                   [f"portfolio_{lev}x_returns" for lev in args.leverage],
                                   log = True)
         log_fig.savefig(name_run_output('returns_log',args.out, args.leverage, "png"))    
+        plt.close(log_fig)
 
+        ann_fig = boxplot_returns(
+            returns_df= annualised_returns_df,
+            portfolio_cols= [f"portfolio_{lev}x_returns" for lev in args.leverage],
+            showfliers=False,
+            label = 'annualized return')
+        ann_fig.savefig(name_run_output('returns_annualized',args.out, args.leverage, "png"))    
+        plt.close(ann_fig)
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
@@ -127,3 +137,5 @@ if __name__ == "__main__":
     p.add_argument("--out", default="rolling_returns.csv")
     p.add_argument("--plot", action="store_true")
     main(p.parse_args())
+
+pass
