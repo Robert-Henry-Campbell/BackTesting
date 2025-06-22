@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.testing as pdt
 from argparse import Namespace
 
-from your_package.your_module import main
+from portfolio.cli import main
 
 
 def test_manual_returns_single_window(tmp_path):
