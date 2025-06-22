@@ -1,52 +1,39 @@
 import pandas as pd
 from typing import List, Optional
 import doctest
-from .utils import to_native
+from .utils import to_native 
+import numpy as np
 
 
-def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
+
+
+def simulate_leveraged_series(prices: pd.Series, leverage: float) -> pd.Series:
     """
-    Simulate portfolio value given an S&P real-price column.
-
-    Examples
-    --------
-    Basic two-row sanity check (10 % price rise → 10 % portfolio rise)
-
-    >>> import pandas as pd, math
-    >>> df = pd.DataFrame({'sp_real_price': [100, 110]})
-    >>> test_leverage = 1
-    >>> out = simulate_portfolio(df, leverage=test_leverage)
-    >>> out[f'portfolio_{test_leverage}x'].tolist()
-    [1.0, 1.1]
-
+    Daily rebalanced futures‑style leveraged P&L.
+    Assumes `prices` is indexed chronologically.
     """
-    df = df.copy()
+    value = np.ones_like(prices, dtype=float)        # start with 1.0 unit of capital
+    for i in range(1, len(prices)):
+        shares = value[i - 1] * leverage / prices.iat[i - 1]
+        pnl = shares * (prices.iat[i] - prices.iat[i - 1])
+        value[i] = value[i - 1] + pnl
+    return pd.Series(value, index=prices.index, name=f"{leverage}x_equity")
 
-    df[f'portfolio_{leverage}x'] = 1.0
-    portfolio_idx = df.columns.get_loc(f'portfolio_{leverage}x')
+def simulate_window(prices: pd.Series, leverage: float,
+                    init_value: float = 1.0) -> np.ndarray:
+    """
+    prices : settlement prices from window start *through* window end
+    returns: array of portfolio equity V_i (same length as prices)
+    """
+    V = np.empty(len(prices), dtype=float)
+    V[0] = init_value
 
-    last_rebalance = 0
-    for i in range(1, len(df)):
-        if i - last_rebalance == rebalance_period:
-            if dividend:
-                raise NotImplementedError("Dividend handling not built yet")
+    for i in range(len(prices) - 1):
+        P_i = prices.iloc[i]
+        Q_i = leverage * V[i] / P_i          # position held during [i, i+1)
+        V[i + 1] = V[i] + Q_i * (prices.iloc[i + 1] - P_i)
 
-            base = df.iloc[last_rebalance, df.columns.get_loc('sp_real_price')]
-            curr = df.iloc[i,            df.columns.get_loc('sp_real_price')]
-
-            df.iat[i, portfolio_idx] = (
-                df.iat[last_rebalance, portfolio_idx] *
-                (curr / base) ** leverage
-            )
-            last_rebalance = i
-        else:  # carry forward
-            df.iat[i, portfolio_idx] = df.iat[i-1, portfolio_idx]
-
-    return df
-
-doctest.run_docstring_examples(simulate_portfolio, globals())
-
-
+    return V
 
 def identify_windows(df, window_size):
     """
@@ -73,6 +60,18 @@ def identify_windows(df, window_size):
 
 doctest.run_docstring_examples(identify_windows, globals())
 
+
+def window_return(series: pd.Series, start: int, end: int) -> float:
+    """
+    Total proportional return on `series` from index `start` (inclusive) to `end` (exclusive).
+    """
+    return series.iat[end] / series.iat[start] - 1.0
+
+def annualise(r: float, n_days: int, periods_per_year: int = 252) -> float:
+    """
+    Geometric annualisation.
+    """
+    return (1.0 + r) ** (periods_per_year / n_days) - 1.0
 
 def calc_window_returns(df, window_size, date_column, portfolio_columns: Optional[List[str]] = None ):
     """
@@ -127,5 +126,47 @@ def calc_window_returns(df, window_size, date_column, portfolio_columns: Optiona
 
 
 
-
 doctest.run_docstring_examples(calc_window_returns, globals())
+
+
+def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
+    """ DEPRICATED
+    Simulate portfolio value given an S&P real-price column.
+
+    Examples
+    --------
+    Basic two-row sanity check (10 % price rise → 10 % portfolio rise)
+
+    >>> import pandas as pd, math
+    >>> df = pd.DataFrame({'sp_real_price': [100, 110]})
+    >>> test_leverage = 1
+    >>> out = simulate_portfolio(df, leverage=test_leverage)
+    >>> out[f'portfolio_{test_leverage}x'].tolist()
+    [1.0, 1.1]
+
+    """
+    df = df.copy()
+
+    df[f'portfolio_{leverage}x'] = 1.0
+    portfolio_idx = df.columns.get_loc(f'portfolio_{leverage}x')
+
+    last_rebalance = 0
+    for i in range(1, len(df)):
+        if i - last_rebalance == rebalance_period:
+            if dividend:
+                raise NotImplementedError("Dividend handling not built yet")
+
+            base = df.iloc[last_rebalance, df.columns.get_loc('sp_real_price')]
+            curr = df.iloc[i,            df.columns.get_loc('sp_real_price')]
+
+            df.iat[i, portfolio_idx] = (
+                df.iat[last_rebalance, portfolio_idx] *
+                (curr / base) ** leverage
+            )
+            last_rebalance = i
+        else:  # carry forward
+            df.iat[i, portfolio_idx] = df.iat[i-1, portfolio_idx]
+
+    return df
+
+doctest.run_docstring_examples(simulate_portfolio, globals())

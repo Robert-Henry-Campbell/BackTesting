@@ -15,6 +15,8 @@ def boxplot_returns(returns_df: pd.DataFrame, portfolio_cols, log=False, showfli
     showfliers : bool, optional
         If False, outlier points will not be shown.
     """
+    returns_df[portfolio_cols] = returns_df[portfolio_cols].apply(pd.to_numeric, errors='coerce')
+
     ax = returns_df[portfolio_cols].boxplot(showfliers=showfliers)
     ax.set_ylabel("Total Return")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)

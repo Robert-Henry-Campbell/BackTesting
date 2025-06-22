@@ -7,6 +7,11 @@ from .core import (
     simulate_portfolio,
     identify_windows,
     calc_window_returns,
+    simulate_window,
+    simulate_leveraged_series,
+    window_return,
+    annualise,
+    
 )
 
 from .report import(

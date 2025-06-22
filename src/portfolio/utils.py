@@ -31,3 +31,11 @@ def name_run_output(name, out, leverage, ftype):
    lev_str = "_".join(str(lev) for lev in leverage)
    fname = os.path.join(out, f"{name}_lev_{lev_str}_run_{timestamp}.{ftype}")
    return fname
+
+def is_not_numeric(val):
+    try:
+        float(val)
+        return False
+    except (ValueError, TypeError):
+        return True
+
