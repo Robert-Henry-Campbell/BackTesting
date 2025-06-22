@@ -2,7 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def boxplot_returns(returns_df: pd.DataFrame, portfolio_cols, log=False, showfliers=True, label = 'Return'):
+def boxplot_returns(
+    returns_df: pd.DataFrame, portfolio_cols, log=False, showfliers=True, label="Return"
+):
     """
     Draw a box-and-whisker plot of window returns.
 
@@ -15,7 +17,9 @@ def boxplot_returns(returns_df: pd.DataFrame, portfolio_cols, log=False, showfli
     showfliers : bool, optional
         If False, outlier points will not be shown.
     """
-    returns_df[portfolio_cols] = returns_df[portfolio_cols].apply(pd.to_numeric, errors='coerce')
+    returns_df[portfolio_cols] = returns_df[portfolio_cols].apply(
+        pd.to_numeric, errors="coerce"
+    )
 
     ax = returns_df[portfolio_cols].boxplot(showfliers=showfliers)
     ax.set_ylabel(label)
@@ -23,5 +27,5 @@ def boxplot_returns(returns_df: pd.DataFrame, portfolio_cols, log=False, showfli
     if log:
         ax.set_yscale("log")
     fig = ax.get_figure()
-    fig.tight_layout() 
+    fig.tight_layout()
     return fig

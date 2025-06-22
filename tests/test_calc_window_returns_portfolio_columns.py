@@ -16,16 +16,22 @@ def test_calc_window_returns_various_portfolio_columns():
     expected_dates = [["d1", "d2"], ["d2", "d3"]]
 
     # portfolio_columns=None -> only window_dates
-    out_none = calc_window_returns(df, window_size=1, date_column="date", portfolio_columns=None)
+    out_none = calc_window_returns(
+        df, window_size=1, date_column="date", portfolio_columns=None
+    )
     expected_none = pd.DataFrame({"window_dates": expected_dates})
     assert_frame_equal(out_none, expected_none, check_dtype=False)
 
     # single portfolio column
-    out_one = calc_window_returns(df, window_size=1, date_column="date", portfolio_columns=["port1"])
-    expected_one = pd.DataFrame({
-        "window_dates": expected_dates,
-        "port1_returns": [2.0, 2.0],
-    })
+    out_one = calc_window_returns(
+        df, window_size=1, date_column="date", portfolio_columns=["port1"]
+    )
+    expected_one = pd.DataFrame(
+        {
+            "window_dates": expected_dates,
+            "port1_returns": [2.0, 2.0],
+        }
+    )
     assert_frame_equal(out_one, expected_one, check_dtype=False)
 
     # two portfolio columns
@@ -35,10 +41,11 @@ def test_calc_window_returns_various_portfolio_columns():
         date_column="date",
         portfolio_columns=["port1", "port2"],
     )
-    expected_two = pd.DataFrame({
-        "window_dates": expected_dates,
-        "port1_returns": [2.0, 2.0],
-        "port2_returns": [0.5, 0.5],
-    })
+    expected_two = pd.DataFrame(
+        {
+            "window_dates": expected_dates,
+            "port1_returns": [2.0, 2.0],
+            "port2_returns": [0.5, 0.5],
+        }
+    )
     assert_frame_equal(out_two, expected_two, check_dtype=False)
-

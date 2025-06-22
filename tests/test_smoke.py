@@ -20,8 +20,6 @@ from portfolio.core import (
 )
 
 
-
-
 def test_simulate_and_window_returns_price_path_1_2_1():
     # ------------------------------------------------------------------
     # 1  Synthetic price data
