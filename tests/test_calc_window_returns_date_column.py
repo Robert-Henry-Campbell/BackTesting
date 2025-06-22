@@ -19,4 +19,3 @@ def test_calc_window_returns_custom_date_column():
 
     expected_dates = [["t1", "t2"], ["t2", "t3"]]
     assert out["window_dates"].tolist() == expected_dates
-

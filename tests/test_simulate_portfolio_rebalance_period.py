@@ -21,7 +21,7 @@ def manual_portfolio(prices, leverage, rebalance_period):
 @pytest.mark.parametrize("period", [1, 2, 10])
 def test_simulate_portfolio_rebalance_period(period):
     prices = [100, 110, 120, 130]
-    df = pd.DataFrame({'sp_real_price': prices})
+    df = pd.DataFrame({"sp_real_price": prices})
     out = simulate_portfolio(df, leverage=2, rebalance_period=period)
     expected = manual_portfolio(prices, leverage=2, rebalance_period=period)
-    assert out['portfolio_2x'].tolist() == expected
+    assert out["portfolio_2x"].tolist() == expected
