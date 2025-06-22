@@ -146,7 +146,7 @@ def calc_window_returns(
 
 
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
-    """DEPRICATED
+    """DEPRECATED
     Simulate portfolio value given an S&P real-price column.
 
     Examples
