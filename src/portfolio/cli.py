@@ -15,6 +15,7 @@ FREQ_TO_PERIODS = {
 def main(args):
     data = pd.read_csv(args.csv)
     data.sort_values(args.datecol, inplace=True)
+    data.reset_index(drop=True, inplace=True)
 
     periods_per_year = FREQ_TO_PERIODS.get(args.freq, 12)
 
@@ -44,7 +45,7 @@ def main(args):
                 years = (len(prices) - 1) / periods_per_year
                 window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
 
-            win_label = data.loc[start_idx, args.datecol]
+            win_label = data.iloc[start_idx][args.datecol]
 
             for df, value in (
                 (returns_df, window_ret),
@@ -55,10 +56,11 @@ def main(args):
 
                 df.loc[df[args.datecol] == win_label, f"portfolio_{lev}x"] = value
 
-    returns_df[args.datecol] = pd.to_datetime(returns_df[args.datecol])
-    annualised_returns_df[args.datecol] = pd.to_datetime(
-        annualised_returns_df[args.datecol]
-    )
+    if args.datecol == "date":
+        returns_df[args.datecol] = pd.to_datetime(returns_df[args.datecol])
+        annualised_returns_df[args.datecol] = pd.to_datetime(
+            annualised_returns_df[args.datecol]
+        )
 
     value_cols = [f"portfolio_{lev}x" for lev in args.leverage]
     returns_df[value_cols] = returns_df[value_cols].astype(float)
