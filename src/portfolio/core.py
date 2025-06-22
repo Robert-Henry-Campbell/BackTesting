@@ -156,7 +156,7 @@ doctest.run_docstring_examples(calc_window_returns, globals())
 
 
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
-    """DEPRICATED
+    """DEPRECATED
     Simulate portfolio value given an S&P real-price column.
 
     Examples
