@@ -163,24 +163,28 @@ def main(args):
     )
 
     if getattr(args, "plot", False):
+        plot_cols = [f"portfolio_{lev}x" for lev in args.leverage]
+        if include_underlying:
+            plot_cols.append("underlying")
+        if dividend_column is not None:
+            plot_cols.append("1x_dividend")
+
         fig = boxplot_returns(
             returns_df=returns_df,
-            portfolio_cols=[f"portfolio_{lev}x" for lev in args.leverage],
+            portfolio_cols=plot_cols,
             showfliers=False,
         )
         fig.show()
         fig.savefig(name_run_output("returns", args.out, args.leverage, "png"))
         plt.close(fig)
 
-        log_fig = boxplot_returns(
-            returns_df, [f"portfolio_{lev}x" for lev in args.leverage], log=True
-        )
+        log_fig = boxplot_returns(returns_df, plot_cols, log=True)
         log_fig.savefig(name_run_output("returns_log", args.out, args.leverage, "png"))
         plt.close(log_fig)
 
         ann_fig = boxplot_returns(
             returns_df=annualised_returns_df,
-            portfolio_cols=[f"portfolio_{lev}x" for lev in args.leverage],
+            portfolio_cols=plot_cols,
             showfliers=False,
             label="annualized return",
         )
