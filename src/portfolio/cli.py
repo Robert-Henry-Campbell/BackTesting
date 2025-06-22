@@ -21,7 +21,11 @@ def main(args):
 
     windows = identify_windows(data, window_size=args.window)
 
+    dividend_col = getattr(args, "dividendcol", None)
+
     cols = [args.datecol] + [f"portfolio_{lev}x" for lev in args.leverage]
+    if dividend_col is not None:
+        cols.append("1x_dividend")
     returns_df = pd.DataFrame(columns=cols)
     annualised_returns_df = pd.DataFrame(columns=cols)
 
@@ -56,6 +60,35 @@ def main(args):
 
                 df.loc[df[args.datecol] == win_label, f"portfolio_{lev}x"] = value
 
+    if dividend_col is not None:
+        for start_idx, end_idx in windows:
+            prices = data.iloc[
+                start_idx : end_idx + 1,
+                data.columns.get_loc(args.pricecol),
+            ]
+            divs = data.iloc[
+                start_idx : end_idx + 1,
+                data.columns.get_loc(dividend_col),
+            ]
+            step_returns = (
+                prices.iloc[1:].values - prices.iloc[:-1].values + divs.iloc[1:].values
+            ) / prices.iloc[:-1].values
+            gross = (1 + step_returns).prod()
+            window_ret = gross - 1.0
+            years = (len(prices) - 1) / periods_per_year
+            window_ann = gross ** (1 / years) - 1.0
+
+            win_label = data.iloc[start_idx][args.datecol]
+
+            for df, value in (
+                (returns_df, window_ret),
+                (annualised_returns_df, window_ann),
+            ):
+                if win_label not in df[args.datecol].values:
+                    df.loc[len(df), args.datecol] = win_label
+
+                df.loc[df[args.datecol] == win_label, "1x_dividend"] = value
+
     if args.datecol == "date":
         returns_df[args.datecol] = pd.to_datetime(returns_df[args.datecol])
         annualised_returns_df[args.datecol] = pd.to_datetime(
@@ -63,6 +96,8 @@ def main(args):
         )
 
     value_cols = [f"portfolio_{lev}x" for lev in args.leverage]
+    if dividend_col is not None:
+        value_cols.append("1x_dividend")
     returns_df[value_cols] = returns_df[value_cols].astype(float)
     annualised_returns_df[value_cols] = annualised_returns_df[value_cols].astype(float)
 
