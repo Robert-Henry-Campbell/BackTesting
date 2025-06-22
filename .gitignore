@@ -17,3 +17,6 @@ build/
 # Data (keep raw CSVs out of the repo)
 data/
 
+#notes
+notes/
+
