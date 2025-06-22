@@ -154,6 +154,28 @@ def calc_window_returns(
     return out
 
 
+def simulate_window_dividend(prices: pd.Series, dividends: pd.Series) -> np.ndarray:
+    """Simulate an unleveraged portfolio with reinvested dividends over ``prices``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> prices = pd.Series([100, 110])
+    >>> divs = pd.Series([0.0, 1.0])
+    >>> simulate_window_dividend(prices, divs)
+    array([1.  , 1.11])
+    """
+
+    V = np.empty(len(prices), dtype=float)
+    V[0] = 1.0
+    for i in range(len(prices) - 1):
+        r = (prices.iloc[i + 1] - prices.iloc[i] + dividends.iloc[i + 1]) / prices.iloc[
+            i
+        ]
+        V[i + 1] = V[i] * (1.0 + r)
+    return V
+
+
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
     """DEPRECATED
     Simulate portfolio value given an S&P real-price column.
