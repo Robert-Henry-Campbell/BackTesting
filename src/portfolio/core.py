@@ -1,6 +1,5 @@
 import pandas as pd
 from typing import List, Optional
-import doctest
 from .utils import to_native
 import numpy as np
 
@@ -50,9 +49,6 @@ def detect_bust(equity_path: np.ndarray) -> bool:
     return (np.asarray(equity_path) <= 0).any()
 
 
-doctest.run_docstring_examples(detect_bust, globals())
-
-
 def identify_windows(df, window_size):
     """
     given a df, returns a list of lists of all possible sliding windows start/endpoints of a given window size.
@@ -74,9 +70,6 @@ def identify_windows(df, window_size):
         end = start + window_size
         windows.append([start, end])
     return windows
-
-
-doctest.run_docstring_examples(identify_windows, globals())
 
 
 def window_return(series: pd.Series, start: int, end: int) -> float:
@@ -152,9 +145,6 @@ def calc_window_returns(
     return out
 
 
-doctest.run_docstring_examples(calc_window_returns, globals())
-
-
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
     """DEPRICATED
     Simulate portfolio value given an S&P real-price column.
@@ -195,4 +185,7 @@ def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
     return df
 
 
-doctest.run_docstring_examples(simulate_portfolio, globals())
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
