@@ -177,7 +177,7 @@ def simulate_window_dividend(prices: pd.Series, dividends: pd.Series) -> np.ndar
 
 
 def underlying_return(prices: pd.Series) -> float:
-    """Return absolute change in price over ``prices``.
+    """Return proportional change in price over ``prices``.
 
     Parameters
     ----------
@@ -187,10 +187,10 @@ def underlying_return(prices: pd.Series) -> float:
     Returns
     -------
     float
-        ``prices`` end value minus start value.
+        Proportional change ``(end / start) - 1``.
     """
 
-    return prices.iloc[-1] - prices.iloc[0]
+    return prices.iloc[-1] / prices.iloc[0] - 1.0
 
 
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
