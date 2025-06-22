@@ -13,6 +13,6 @@ if __name__ == "__main__":
     p.add_argument("--dividendcol", default=None)
     p.add_argument("--underlying", action="store_true")
     p.add_argument("--freq", choices=["day", "month", "year"], default="month")
-    p.add_argument("--out", default="rolling_returns.csv")
+    p.add_argument("--out", default="data/outputs/")
     p.add_argument("--plot", action="store_true")
     main(p.parse_args())
