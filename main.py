@@ -11,6 +11,7 @@ if __name__ == "__main__":
     p.add_argument("--datecol", default="date")
     p.add_argument("--pricecol", default="sp_real_price")
     p.add_argument("--dividendcol", default=None)
+    p.add_argument("--underlying", action="store_true")
     p.add_argument("--freq", choices=["day", "month", "year"], default="month")
     p.add_argument("--out", default="rolling_returns.csv")
     p.add_argument("--plot", action="store_true")

@@ -176,6 +176,23 @@ def simulate_window_dividend(prices: pd.Series, dividends: pd.Series) -> np.ndar
     return V
 
 
+def underlying_return(prices: pd.Series) -> float:
+    """Return absolute change in price over ``prices``.
+
+    Parameters
+    ----------
+    prices : pd.Series
+        Price series covering a single window.
+
+    Returns
+    -------
+    float
+        ``prices`` end value minus start value.
+    """
+
+    return prices.iloc[-1] - prices.iloc[0]
+
+
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
     """DEPRECATED
     Simulate portfolio value given an S&P real-price column.
