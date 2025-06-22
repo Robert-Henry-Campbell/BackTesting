@@ -79,11 +79,20 @@ def window_return(series: pd.Series, start: int, end: int) -> float:
     return series.iat[end] / series.iat[start] - 1.0
 
 
-def annualise(r: float, n_days: int, periods_per_year: int = 252) -> float:
+def annualise(r: float, n_periods: int, periods_per_year: int) -> float:
+    """Geometrically annualise ``r`` over ``n_periods``.
+
+    Parameters
+    ----------
+    r : float
+        Total return over the period.
+    n_periods : int
+        Number of observed periods used to generate ``r``.
+    periods_per_year : int
+        How many of those periods constitute one year.
     """
-    Geometric annualisation.
-    """
-    return (1.0 + r) ** (periods_per_year / n_days) - 1.0
+
+    return (1.0 + r) ** (periods_per_year / n_periods) - 1.0
 
 
 def calc_window_returns(

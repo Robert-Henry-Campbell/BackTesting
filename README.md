@@ -30,7 +30,7 @@ bash scripts/setup_env.sh
 pytest -q
 
 # 4  Run the CLI on your own CSV
-python main.py data/sp500_real.csv --window 252 --leverage 1 2 --plot
+python main.py data/sp500_real.csv --window 252 --leverage 1 2 --freq month --plot
 ```
 
 ## Command-Line Interface (CLI) Usage
@@ -61,9 +61,13 @@ python main.py data/processed/data_for_futures.csv --window 240 --leverage 0.5 0
   Example: `--leverage 1.0 2.0 3.0`  
   **Default:** `1.0 2.0`
 
-- `--datecol <str>`  
-  Name of the column to use for date labels.  
+- `--datecol <str>`
+  Name of the column to use for date labels.
   **Default:** `"date"`
+
+- `--freq {day,month,year}`
+  Frequency of the input data. Determines how annualised returns are calculated.
+  **Default:** `month`
 
 
 - `--out <filename>`  
@@ -76,7 +80,7 @@ python main.py data/processed/data_for_futures.csv --window 240 --leverage 0.5 0
 ### Example Usage
 
 ```bash
-python main.py data/sp500_real.csv --window 252 --leverage 1.0 2.0 3.0 --plot --out results/returns.csv
+python main.py data/sp500_real.csv --window 252 --leverage 1.0 2.0 3.0 --freq month --plot --out results/returns.csv
 ```
 
 ## Project Layout
