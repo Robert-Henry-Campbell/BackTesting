@@ -1,10 +1,8 @@
 import pandas as pd
 from typing import List, Optional
 import doctest
-from .utils import to_native 
+from .utils import to_native
 import numpy as np
-
-
 
 
 def simulate_leveraged_series(prices: pd.Series, leverage: float) -> pd.Series:
@@ -12,15 +10,17 @@ def simulate_leveraged_series(prices: pd.Series, leverage: float) -> pd.Series:
     Daily rebalanced futures‑style leveraged P&L.
     Assumes `prices` is indexed chronologically.
     """
-    value = np.ones_like(prices, dtype=float)        # start with 1.0 unit of capital
+    value = np.ones_like(prices, dtype=float)  # start with 1.0 unit of capital
     for i in range(1, len(prices)):
         shares = value[i - 1] * leverage / prices.iat[i - 1]
         pnl = shares * (prices.iat[i] - prices.iat[i - 1])
         value[i] = value[i - 1] + pnl
     return pd.Series(value, index=prices.index, name=f"{leverage}x_equity")
 
-def simulate_window(prices: pd.Series, leverage: float,
-                    init_value: float = 1.0) -> np.ndarray:
+
+def simulate_window(
+    prices: pd.Series, leverage: float, init_value: float = 1.0
+) -> np.ndarray:
     """
     prices : settlement prices from window start *through* window end
     returns: array of portfolio equity V_i (same length as prices)
@@ -30,31 +30,49 @@ def simulate_window(prices: pd.Series, leverage: float,
 
     for i in range(len(prices) - 1):
         P_i = prices.iloc[i]
-        Q_i = leverage * V[i] / P_i          # position held during [i, i+1)
+        Q_i = leverage * V[i] / P_i  # position held during [i, i+1)
         V[i + 1] = V[i] + Q_i * (prices.iloc[i + 1] - P_i)
 
     return V
 
+
+def detect_bust(equity_path: np.ndarray) -> bool:
+    """Return ``True`` if ``equity_path`` hits zero or below.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> detect_bust(np.array([1.0, 0.5, -0.1]))
+    True
+    >>> detect_bust(np.array([1.0, 1.2, 0.8]))
+    False
+    """
+    return (np.asarray(equity_path) <= 0).any()
+
+
+doctest.run_docstring_examples(detect_bust, globals())
+
+
 def identify_windows(df, window_size):
     """
-    given a df, returns a list of lists of all possible sliding windows start/endpoints of a given window size. 
-    
+    given a df, returns a list of lists of all possible sliding windows start/endpoints of a given window size.
+
     example
     ----
-    >>> import pandas as pd 
+    >>> import pandas as pd
     >>> df = pd.DataFrame({
     ...  'date': [1,2,3],
     ...    'portfolio1':[100,200,400],
     ...    'portfolio2':[100,50,25]
     ...    })
     >>> out = identify_windows(df,1)
-    >>> out 
+    >>> out
     [[0, 1], [1, 2]]
     """
     windows = []
     for start in range(len(df) - window_size):
-        end = start + window_size 
-        windows.append([start,end])
+        end = start + window_size
+        windows.append([start, end])
     return windows
 
 
@@ -67,13 +85,17 @@ def window_return(series: pd.Series, start: int, end: int) -> float:
     """
     return series.iat[end] / series.iat[start] - 1.0
 
+
 def annualise(r: float, n_days: int, periods_per_year: int = 252) -> float:
     """
     Geometric annualisation.
     """
     return (1.0 + r) ** (periods_per_year / n_days) - 1.0
 
-def calc_window_returns(df, window_size, date_column, portfolio_columns: Optional[List[str]] = None ):
+
+def calc_window_returns(
+    df, window_size, date_column, portfolio_columns: Optional[List[str]] = None
+):
     """
     calculates portfolio return over all possible rolling windows of a given size
 
@@ -90,7 +112,7 @@ def calc_window_returns(df, window_size, date_column, portfolio_columns: Optiona
     ... 'window_dates':[['day1','day2'],['day2','day3']],
     ... 'portfolio1_returns':[2.0,10.0],
     ... 'portfolio2_returns':[0.5,0.1]
-    ...  })) 
+    ...  }))
     True
     """
     df = df.copy()
@@ -103,34 +125,38 @@ def calc_window_returns(df, window_size, date_column, portfolio_columns: Optiona
         end_idx = window[1]
         start_val = df.iloc[start_idx, df.columns.get_loc(date_column)]
         end_val = df.iloc[end_idx, df.columns.get_loc(date_column)]
-        window_dates.append([to_native(start_val),to_native(end_val)] )
-    
-    out = pd.DataFrame({
-        'window_dates': window_dates,
-        })
+        window_dates.append([to_native(start_val), to_native(end_val)])
 
-    #for each portfolio column, calculate the returns over the defined windows and add to the outdf
+    out = pd.DataFrame(
+        {
+            "window_dates": window_dates,
+        }
+    )
+
+    # for each portfolio column, calculate the returns over the defined windows and add to the outdf
     for portfolio in portfolio_columns:
-        #calculate the return for each window
-        portfolio_returns = [] #captures return over the many possible windows
+        # calculate the return for each window
+        portfolio_returns = []  # captures return over the many possible windows
         for window in windows:
             start_idx = window[0]
             end_idx = window[1]
-            #return is portfolio at end / portfolio at start
-            window_return = df.iloc[end_idx, df.columns.get_loc(portfolio)] / df.iloc[start_idx, df.columns.get_loc(portfolio)]
+            # return is portfolio at end / portfolio at start
+            window_return = (
+                df.iloc[end_idx, df.columns.get_loc(portfolio)]
+                / df.iloc[start_idx, df.columns.get_loc(portfolio)]
+            )
             portfolio_returns.append(window_return)
-        #add the returns to the out
-        out[f'{portfolio}_returns'] = portfolio_returns
-    #print(out)
+        # add the returns to the out
+        out[f"{portfolio}_returns"] = portfolio_returns
+    # print(out)
     return out
-
 
 
 doctest.run_docstring_examples(calc_window_returns, globals())
 
 
 def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
-    """ DEPRICATED
+    """DEPRICATED
     Simulate portfolio value given an S&P real-price column.
 
     Examples
@@ -147,8 +173,8 @@ def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
     """
     df = df.copy()
 
-    df[f'portfolio_{leverage}x'] = 1.0
-    portfolio_idx = df.columns.get_loc(f'portfolio_{leverage}x')
+    df[f"portfolio_{leverage}x"] = 1.0
+    portfolio_idx = df.columns.get_loc(f"portfolio_{leverage}x")
 
     last_rebalance = 0
     for i in range(1, len(df)):
@@ -156,17 +182,17 @@ def simulate_portfolio(df, leverage=1, dividend=False, rebalance_period=1):
             if dividend:
                 raise NotImplementedError("Dividend handling not built yet")
 
-            base = df.iloc[last_rebalance, df.columns.get_loc('sp_real_price')]
-            curr = df.iloc[i,            df.columns.get_loc('sp_real_price')]
+            base = df.iloc[last_rebalance, df.columns.get_loc("sp_real_price")]
+            curr = df.iloc[i, df.columns.get_loc("sp_real_price")]
 
             df.iat[i, portfolio_idx] = (
-                df.iat[last_rebalance, portfolio_idx] *
-                (curr / base) ** leverage
+                df.iat[last_rebalance, portfolio_idx] * (curr / base) ** leverage
             )
             last_rebalance = i
         else:  # carry forward
-            df.iat[i, portfolio_idx] = df.iat[i-1, portfolio_idx]
+            df.iat[i, portfolio_idx] = df.iat[i - 1, portfolio_idx]
 
     return df
+
 
 doctest.run_docstring_examples(simulate_portfolio, globals())
