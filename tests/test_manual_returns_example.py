@@ -27,10 +27,13 @@ def test_manual_returns_single_window(tmp_path):
     )
 
     returns_df, _, summary_df = main(args)
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
 
     expected = pd.DataFrame(
         {
-            "date": pd.to_datetime(["2025-01"]),
+            start_col: ["2025-01"],
+            end_col: ["2025-04"],
             "portfolio_1x": [-0.139712],
             "portfolio_2x": [-0.277696],
             "portfolio_10x": [0.0],

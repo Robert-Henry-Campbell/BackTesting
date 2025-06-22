@@ -24,6 +24,15 @@ def naive_sim(prices, leverage, V0=1.0):
 FREQ_TO_PERIODS = {"day": 252, "month": 12, "year": 1}
 
 
+def _fmt(val, freq):
+    ts = pd.to_datetime(val)
+    if freq == "year":
+        return ts.strftime("%Y")
+    if freq == "month":
+        return ts.strftime("%Y-%m")
+    return ts.strftime("%Y-%m-%d")
+
+
 def build_expected_frames(df_prices, window_size, leverage, datecol, pricecol, freq):
     """Return returns_df, annual_df, summary_df calculated independently."""
     # 1. windows
@@ -33,6 +42,9 @@ def build_expected_frames(df_prices, window_size, leverage, datecol, pricecol, f
     returns_rows = []
     ann_rows = []
     busts = 0
+
+    start_col = f"start_{datecol}"
+    end_col = f"end_{datecol}"
 
     for start, end in windows:
         window_prices = df_prices.iloc[start : end + 1][pricecol]
@@ -48,9 +60,22 @@ def build_expected_frames(df_prices, window_size, leverage, datecol, pricecol, f
             years = (len(window_prices) - 1) / periods_per_year
             window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
 
-        win_label = df_prices.iloc[start][datecol]
-        returns_rows.append({datecol: win_label, f"portfolio_{leverage}x": window_ret})
-        ann_rows.append({datecol: win_label, f"portfolio_{leverage}x": window_ann})
+        start_label = _fmt(df_prices.iloc[start][datecol], freq)
+        end_label = _fmt(df_prices.iloc[end][datecol], freq)
+        returns_rows.append(
+            {
+                start_col: start_label,
+                end_col: end_label,
+                f"portfolio_{leverage}x": window_ret,
+            }
+        )
+        ann_rows.append(
+            {
+                start_col: start_label,
+                end_col: end_label,
+                f"portfolio_{leverage}x": window_ann,
+            }
+        )
 
     returns_df = pd.DataFrame(returns_rows)
     annual_df = pd.DataFrame(ann_rows)
@@ -58,7 +83,7 @@ def build_expected_frames(df_prices, window_size, leverage, datecol, pricecol, f
         {"leverage": [leverage], "bust_ratio": [busts / len(windows)]}
     )
     # ensure identical column order
-    ordered_cols = [datecol, f"portfolio_{leverage}x"]
+    ordered_cols = [start_col, end_col, f"portfolio_{leverage}x"]
     returns_df = returns_df[ordered_cols]
     annual_df = annual_df[ordered_cols]
 
@@ -90,6 +115,8 @@ def test_main_integration(tmp_path: Path):
 
     # 3. call main (must return the three data frames)
     returns_df, ann_df, summary_df = main(args)
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
 
     # 4. compute expected frames independently
     exp_ret, exp_ann, exp_sum = build_expected_frames(
@@ -98,12 +125,12 @@ def test_main_integration(tmp_path: Path):
 
     # 5. assert equality (order-insensitive on index)
     pdt.assert_frame_equal(
-        returns_df.sort_values("date").reset_index(drop=True),
-        exp_ret.sort_values("date").reset_index(drop=True),
+        returns_df.sort_values(start_col).reset_index(drop=True),
+        exp_ret.sort_values(start_col).reset_index(drop=True),
     )
     pdt.assert_frame_equal(
-        ann_df.sort_values("date").reset_index(drop=True),
-        exp_ann.sort_values("date").reset_index(drop=True),
+        ann_df.sort_values(start_col).reset_index(drop=True),
+        exp_ann.sort_values(start_col).reset_index(drop=True),
     )
     pdt.assert_frame_equal(
         summary_df.reset_index(drop=True), exp_sum.reset_index(drop=True)
@@ -131,8 +158,12 @@ def test_multiple_leverage_columns(tmp_path: Path):
     )
 
     returns_df, ann_df, _ = main(args)
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
 
-    expected_cols = ["date"] + [f"portfolio_{lev}x" for lev in args.leverage]
+    expected_cols = [start_col, end_col] + [
+        f"portfolio_{lev}x" for lev in args.leverage
+    ]
     assert list(returns_df.columns) == expected_cols
     assert list(ann_df.columns) == expected_cols
     assert not returns_df.isna().any().any()
@@ -160,18 +191,20 @@ def test_unsorted_input_sorted_output(tmp_path: Path):
     )
 
     returns_df, ann_df, _ = main(args)
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
 
     sorted_df = df.sort_values("date").reset_index(drop=True)
     exp_ret, exp_ann, _ = build_expected_frames(
         sorted_df, 1, 1.0, "date", "price", "day"
     )
     pdt.assert_frame_equal(
-        returns_df.sort_values("date").reset_index(drop=True),
-        exp_ret.sort_values("date").reset_index(drop=True),
+        returns_df.sort_values(start_col).reset_index(drop=True),
+        exp_ret.sort_values(start_col).reset_index(drop=True),
     )
     pdt.assert_frame_equal(
-        ann_df.sort_values("date").reset_index(drop=True),
-        exp_ann.sort_values("date").reset_index(drop=True),
+        ann_df.sort_values(start_col).reset_index(drop=True),
+        exp_ann.sort_values(start_col).reset_index(drop=True),
     )
 
 
@@ -237,8 +270,10 @@ def test_bust_detection(tmp_path: Path):
     )
 
     returns_df, _, summary_df = main(args)
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
 
-    assert returns_df.iloc[0, 1] == 0.0
+    assert returns_df.iloc[0, 2] == 0.0
     assert summary_df.loc[0, "bust_ratio"] == 0.5
 
 
@@ -263,9 +298,11 @@ def test_date_column_override(tmp_path: Path):
     )
 
     returns_df, _, _ = main(args)
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
 
-    assert list(returns_df.columns)[0] == "ts"
-    assert returns_df["ts"].tolist() == ["2024-01", "2024-02"]
+    assert list(returns_df.columns)[:2] == [start_col, end_col]
+    assert returns_df[start_col].tolist() == ["2024-01", "2024-02"]
 
 
 def test_missing_price_column(tmp_path: Path):
