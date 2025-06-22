@@ -15,39 +15,6 @@ import os
 from datetime import datetime
 
 
-"""
-def main(args):
-    portfolio = pd.read_csv(args.csv)
-    for lev in args.leverage:
-        portfolio = simulate_portfolio(portfolio, leverage=lev)
-
-    portfolio.to_csv(name_run_output('portfolio',args.out, args.leverage, 'csv'))
-
-
-    returns = calc_window_returns(
-        portfolio,
-        window_size=args.window,
-        date_column=args.datecol,
-        portfolio_columns=[f"portfolio_{lev}x" for lev in args.leverage],
-    )
-    returns.to_csv(name_run_output('returns',args.out, args.leverage, "csv"))
-
-    if getattr(args, "plot", False):
-        fig = boxplot_returns(
-            returns,
-            [f"portfolio_{lev}x_returns" for lev in args.leverage],
-            showfliers=False
-        )
-        fig.show()
-        fig.savefig(name_run_output('returns',args.out, args.leverage, "png"))
-        log_fig = boxplot_returns(returns, 
-                                  [f"portfolio_{lev}x_returns" for lev in args.leverage],
-                                  log = True)
-
-    pass
-"""
-
-
 def main(args):
     data = pd.read_csv(args.csv)
     data.sort_values(args.datecol, inplace=True)
@@ -168,5 +135,3 @@ if __name__ == "__main__":
     p.add_argument("--out", default="rolling_returns.csv")
     p.add_argument("--plot", action="store_true")
     main(p.parse_args())
-
-pass
