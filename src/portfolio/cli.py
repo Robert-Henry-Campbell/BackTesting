@@ -5,10 +5,18 @@ from .core import identify_windows, simulate_window, detect_bust
 from .report import boxplot_returns
 from .utils import name_run_output
 
+FREQ_TO_PERIODS = {
+    "day": 252,
+    "month": 12,
+    "year": 1,
+}
+
 
 def main(args):
     data = pd.read_csv(args.csv)
     data.sort_values(args.datecol, inplace=True)
+
+    periods_per_year = FREQ_TO_PERIODS.get(args.freq, 12)
 
     windows = identify_windows(data, window_size=args.window)
 
@@ -33,7 +41,7 @@ def main(args):
                 window_ann = 0.0
             else:
                 window_ret = V_path[-1] / V_path[0] - 1.0
-                years = (len(prices) - 1) / 252
+                years = (len(prices) - 1) / periods_per_year
                 window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
 
             win_label = data.loc[start_idx, args.datecol]
