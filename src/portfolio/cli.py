@@ -6,6 +6,7 @@ from .core import (
     simulate_window,
     simulate_window_dividend,
     detect_bust,
+    underlying_return,
 )
 from .report import boxplot_returns
 from .utils import name_run_output
@@ -27,8 +28,11 @@ def main(args):
     windows = identify_windows(data, window_size=args.window)
 
     dividend_column = getattr(args, "dividendcol", None)
+    include_underlying = getattr(args, "underlying", False)
 
     cols = [args.datecol] + [f"portfolio_{lev}x" for lev in args.leverage]
+    if include_underlying:
+        cols.append("underlying")
     if dividend_column is not None:
         cols.append("1x_dividend")
     returns_df = pd.DataFrame(columns=cols)
@@ -65,6 +69,27 @@ def main(args):
 
                 df.loc[df[args.datecol] == win_label, f"portfolio_{lev}x"] = value
 
+    if include_underlying:
+        for start_idx, end_idx in windows:
+            prices = data.iloc[
+                start_idx : end_idx + 1,
+                data.columns.get_loc(args.pricecol),
+            ]
+            window_ret = underlying_return(prices)
+            years = (len(prices) - 1) / periods_per_year
+            window_ann = window_ret / years if years else 0.0
+
+            win_label = data.iloc[start_idx][args.datecol]
+
+            for df, value in (
+                (returns_df, window_ret),
+                (annualised_returns_df, window_ann),
+            ):
+                if win_label not in df[args.datecol].values:
+                    df.loc[len(df), args.datecol] = win_label
+
+                df.loc[df[args.datecol] == win_label, "underlying"] = value
+
     if dividend_column is not None:
         for start_idx, end_idx in windows:
             prices = data.iloc[
@@ -98,6 +123,8 @@ def main(args):
         )
 
     value_cols = [f"portfolio_{lev}x" for lev in args.leverage]
+    if include_underlying:
+        value_cols.append("underlying")
     if dividend_column is not None:
         value_cols.append("1x_dividend")
     returns_df[value_cols] = returns_df[value_cols].astype(float)
