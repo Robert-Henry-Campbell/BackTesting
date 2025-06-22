@@ -27,10 +27,13 @@ def main(args):
     windows = identify_windows(data, window_size=args.window)
 
     dividend_column = getattr(args, "dividendcol", None)
+    include_underlying = getattr(args, "underlying", False)
 
     cols = [args.datecol] + [f"portfolio_{lev}x" for lev in args.leverage]
     if dividend_column is not None:
         cols.append("1x_dividend")
+    if include_underlying:
+        cols.append("underlying")
     returns_df = pd.DataFrame(columns=cols)
     annualised_returns_df = pd.DataFrame(columns=cols)
 
@@ -64,6 +67,27 @@ def main(args):
                     df.loc[len(df), args.datecol] = win_label
 
                 df.loc[df[args.datecol] == win_label, f"portfolio_{lev}x"] = value
+
+    if include_underlying:
+        price_idx = data.columns.get_loc(args.pricecol)
+        for start_idx, end_idx in windows:
+            start_p = data.iloc[start_idx, price_idx]
+            end_p = data.iloc[end_idx, price_idx]
+            total_ret = end_p / start_p - 1.0
+            years = (end_idx - start_idx) / periods_per_year
+            ann_ret = (1.0 + total_ret) ** (1 / years) - 1.0 if years > 0 else 0.0
+
+            win_label = data.iloc[start_idx][args.datecol]
+
+            if win_label not in returns_df[args.datecol].values:
+                returns_df.loc[len(returns_df), args.datecol] = win_label
+            if win_label not in annualised_returns_df[args.datecol].values:
+                annualised_returns_df.loc[len(annualised_returns_df), args.datecol] = win_label
+
+            returns_df.loc[returns_df[args.datecol] == win_label, "underlying"] = total_ret
+            annualised_returns_df.loc[
+                annualised_returns_df[args.datecol] == win_label, "underlying"
+            ] = ann_ret
 
     if dividend_column is not None:
         for start_idx, end_idx in windows:
@@ -100,6 +124,8 @@ def main(args):
     value_cols = [f"portfolio_{lev}x" for lev in args.leverage]
     if dividend_column is not None:
         value_cols.append("1x_dividend")
+    if include_underlying:
+        value_cols.append("underlying")
     returns_df[value_cols] = returns_df[value_cols].astype(float)
     annualised_returns_df[value_cols] = annualised_returns_df[value_cols].astype(float)
 
@@ -122,9 +148,13 @@ def main(args):
     )
 
     if getattr(args, "plot", False):
+        port_cols = [f"portfolio_{lev}x" for lev in args.leverage]
+        if include_underlying:
+            port_cols.append("underlying")
+
         fig = boxplot_returns(
             returns_df=returns_df,
-            portfolio_cols=[f"portfolio_{lev}x" for lev in args.leverage],
+            portfolio_cols=port_cols,
             showfliers=False,
         )
         fig.show()
@@ -132,14 +162,16 @@ def main(args):
         plt.close(fig)
 
         log_fig = boxplot_returns(
-            returns_df, [f"portfolio_{lev}x" for lev in args.leverage], log=True
+            returns_df,
+            port_cols,
+            log=True,
         )
         log_fig.savefig(name_run_output("returns_log", args.out, args.leverage, "png"))
         plt.close(log_fig)
 
         ann_fig = boxplot_returns(
             returns_df=annualised_returns_df,
-            portfolio_cols=[f"portfolio_{lev}x" for lev in args.leverage],
+            portfolio_cols=port_cols,
             showfliers=False,
             label="annualized return",
         )

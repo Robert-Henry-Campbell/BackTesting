@@ -74,8 +74,12 @@ python main.py data/processed/data_for_futures.csv --window 240 --leverage 0.5 0
   Output path for the CSV containing rolling returns.  
   **Default:** `rolling_returns.csv` (written to current directory)
 
-- `--plot`  
+- `--plot`
   If included, generates a boxplot of returns for each portfolio and displays it using `matplotlib.pyplot.show()`.
+
+- `--underlying`
+  When set, adds a column named `underlying` capturing the total return of the
+  underlying price series in each window, computed as `end_price / start_price - 1`.
 
 ### Example Usage
 

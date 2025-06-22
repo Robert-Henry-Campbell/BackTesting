@@ -216,6 +216,53 @@ def test_plot_option_creates_files(tmp_path: Path, monkeypatch):
         assert (tmp_path / fname).exists()
 
 
+def test_plot_option_includes_underlying(tmp_path: Path, monkeypatch):
+    df = pd.DataFrame(
+        {
+            "date": pd.date_range("2024-01-01", periods=3, freq="D"),
+            "price": [100.0, 101.0, 102.0],
+        }
+    )
+    csv = tmp_path / "prices.csv"
+    df.to_csv(csv, index=False)
+
+    cols_passed = []
+
+    def dummy_boxplot_returns(*args, **kwargs):
+        if "portfolio_cols" in kwargs:
+            pc = kwargs["portfolio_cols"]
+        elif len(args) >= 2:
+            pc = args[1]
+        else:
+            pc = []
+        cols_passed.append(list(pc))
+        return plt.figure()
+
+    monkeypatch.setattr("portfolio.cli.boxplot_returns", dummy_boxplot_returns)
+    monkeypatch.setattr(
+        "portfolio.cli.name_run_output",
+        lambda name, out, lev, ftype: str(tmp_path / f"{name}.{ftype}"),
+    )
+
+    args = Namespace(
+        csv=str(csv),
+        window=1,
+        leverage=[1.0],
+        datecol="date",
+        pricecol="price",
+        out=str(tmp_path),
+        freq="day",
+        plot=True,
+        underlying=True,
+    )
+
+    main(args)
+
+    assert cols_passed
+    for cols in cols_passed:
+        assert "underlying" in cols
+
+
 def test_bust_detection(tmp_path: Path):
     df = pd.DataFrame(
         {
