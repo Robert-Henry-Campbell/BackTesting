@@ -32,7 +32,7 @@ def test_underlying_portfolio_added(tmp_path):
     prices = df["price"].tolist()
     path = naive_sim(prices, 1.0)
     exp_port = [path[1] / path[0] - 1.0, path[2] / path[1] - 1.0]
-    underlying_returns = [prices[1] - prices[0], prices[2] - prices[1]]
+    underlying_returns = [prices[1] / prices[0] - 1.0, prices[2] / prices[1] - 1.0]
     expected = pd.DataFrame(
         {
             "date": df["date"].iloc[:2].tolist(),
