@@ -69,6 +69,11 @@ python main.py data/processed/data_for_futures.csv --window 240 --leverage 0.5 0
   Frequency of the input data. Determines how annualised returns are calculated.
   **Default:** `month`
 
+- `--dividendcol <str>`
+  Name of the dividend column in the CSV. When provided, the CLI also outputs a
+  `1x_dividend` portfolio where returns include price changes plus dividends.
+  **Default:** `None`
+
 
 - `--out <filename>`  
   Output path for the CSV containing rolling returns.  
