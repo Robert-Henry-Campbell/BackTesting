@@ -18,6 +18,15 @@ FREQ_TO_PERIODS = {
 }
 
 
+def _format_label(value, freq):
+    ts = pd.to_datetime(value)
+    if freq == "year":
+        return ts.strftime("%Y")
+    if freq == "month":
+        return ts.strftime("%Y-%m")
+    return ts.strftime("%Y-%m-%d")
+
+
 def main(args):
     data = pd.read_csv(args.csv)
     data.sort_values(args.datecol, inplace=True)
@@ -30,7 +39,9 @@ def main(args):
     dividend_column = getattr(args, "dividendcol", None)
     include_underlying = getattr(args, "underlying", False)
 
-    cols = [args.datecol] + [f"portfolio_{lev}x" for lev in args.leverage]
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
+    cols = [start_col, end_col] + [f"portfolio_{lev}x" for lev in args.leverage]
     if include_underlying:
         cols.append("underlying")
     if dividend_column is not None:
@@ -58,16 +69,19 @@ def main(args):
                 years = (len(prices) - 1) / periods_per_year
                 window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
 
-            win_label = data.iloc[start_idx][args.datecol]
+            start_label = _format_label(data.iloc[start_idx][args.datecol], args.freq)
+            end_label = _format_label(data.iloc[end_idx][args.datecol], args.freq)
 
             for df, value in (
                 (returns_df, window_ret),
                 (annualised_returns_df, window_ann),
             ):
-                if win_label not in df[args.datecol].values:
-                    df.loc[len(df), args.datecol] = win_label
+                mask = (df[start_col] == start_label) & (df[end_col] == end_label)
+                if not mask.any():
+                    df.loc[len(df), [start_col, end_col]] = [start_label, end_label]
+                    mask = (df[start_col] == start_label) & (df[end_col] == end_label)
 
-                df.loc[df[args.datecol] == win_label, f"portfolio_{lev}x"] = value
+                df.loc[mask, f"portfolio_{lev}x"] = value
 
     if include_underlying:
         for start_idx, end_idx in windows:
@@ -79,16 +93,19 @@ def main(args):
             years = (len(prices) - 1) / periods_per_year
             window_ann = window_ret / years if years else 0.0
 
-            win_label = data.iloc[start_idx][args.datecol]
+            start_label = _format_label(data.iloc[start_idx][args.datecol], args.freq)
+            end_label = _format_label(data.iloc[end_idx][args.datecol], args.freq)
 
             for df, value in (
                 (returns_df, window_ret),
                 (annualised_returns_df, window_ann),
             ):
-                if win_label not in df[args.datecol].values:
-                    df.loc[len(df), args.datecol] = win_label
+                mask = (df[start_col] == start_label) & (df[end_col] == end_label)
+                if not mask.any():
+                    df.loc[len(df), [start_col, end_col]] = [start_label, end_label]
+                    mask = (df[start_col] == start_label) & (df[end_col] == end_label)
 
-                df.loc[df[args.datecol] == win_label, "underlying"] = value
+                df.loc[mask, "underlying"] = value
 
     if dividend_column is not None:
         for start_idx, end_idx in windows:
@@ -105,22 +122,19 @@ def main(args):
             years = (len(prices) - 1) / periods_per_year
             window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
 
-            win_label = data.iloc[start_idx][args.datecol]
+            start_label = _format_label(data.iloc[start_idx][args.datecol], args.freq)
+            end_label = _format_label(data.iloc[end_idx][args.datecol], args.freq)
 
             for df, value in (
                 (returns_df, window_ret),
                 (annualised_returns_df, window_ann),
             ):
-                if win_label not in df[args.datecol].values:
-                    df.loc[len(df), args.datecol] = win_label
+                mask = (df[start_col] == start_label) & (df[end_col] == end_label)
+                if not mask.any():
+                    df.loc[len(df), [start_col, end_col]] = [start_label, end_label]
+                    mask = (df[start_col] == start_label) & (df[end_col] == end_label)
 
-                df.loc[df[args.datecol] == win_label, "1x_dividend"] = value
-
-    if args.datecol == "date":
-        returns_df[args.datecol] = pd.to_datetime(returns_df[args.datecol])
-        annualised_returns_df[args.datecol] = pd.to_datetime(
-            annualised_returns_df[args.datecol]
-        )
+                df.loc[mask, "1x_dividend"] = value
 
     value_cols = [f"portfolio_{lev}x" for lev in args.leverage]
     if include_underlying:

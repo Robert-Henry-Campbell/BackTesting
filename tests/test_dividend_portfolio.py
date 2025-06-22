@@ -29,6 +29,8 @@ def test_dividend_portfolio_added(tmp_path):
     )
 
     returns_df, _, _ = main(args)
+    start_col = f"start_{args.datecol}"
+    end_col = f"end_{args.datecol}"
 
     prices = df["price"].tolist()
     divs = df["div"].tolist()
@@ -40,14 +42,15 @@ def test_dividend_portfolio_added(tmp_path):
     ]
     expected = pd.DataFrame(
         {
-            "date": df["date"].iloc[:2].tolist(),
+            start_col: df["date"].iloc[:2].dt.strftime("%Y-%m-%d").tolist(),
+            end_col: df["date"].iloc[1:3].dt.strftime("%Y-%m-%d").tolist(),
             "portfolio_1x": exp_port,
             "1x_dividend": div_returns,
         }
     )
 
     pdt.assert_frame_equal(
-        returns_df.sort_values("date").reset_index(drop=True),
-        expected.sort_values("date").reset_index(drop=True),
+        returns_df.sort_values(start_col).reset_index(drop=True),
+        expected.sort_values(start_col).reset_index(drop=True),
     )
     assert "1x_dividend" in returns_df.columns
