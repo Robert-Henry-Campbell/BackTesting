@@ -7,7 +7,6 @@ from .core import (
     simulate_window_dividend,
     detect_bust,
     underlying_return,
-    annualise,
 )
 from .report import boxplot_returns
 from .utils import name_run_output
@@ -40,7 +39,7 @@ def _format_label(value, freq):
     ts = pd.to_datetime(value, errors="coerce")
     if pd.isna(ts):
         return pd.NA
-
+      
     if freq == "year":
         return ts.strftime("%Y")
     if freq == "month":
@@ -87,8 +86,8 @@ def main(args):
                 window_ann = 0.0
             else:
                 window_ret = V_path[-1] / V_path[0] - 1.0
-                n_periods = len(prices) - 1
-                window_ann = annualise(window_ret, n_periods, periods_per_year)
+                years = (len(prices) - 1) / periods_per_year
+                window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
 
             start_label = _format_label(data.iloc[start_idx][args.datecol], args.freq)
             end_label = _format_label(data.iloc[end_idx][args.datecol], args.freq)
@@ -111,10 +110,8 @@ def main(args):
                 data.columns.get_loc(args.pricecol),
             ]
             window_ret = underlying_return(prices)
-            n_periods = len(prices) - 1
-            window_ann = (
-                annualise(window_ret, n_periods, periods_per_year) if n_periods else 0.0
-            )
+            years = (len(prices) - 1) / periods_per_year
+            window_ann = window_ret / years if years else 0.0
 
             start_label = _format_label(data.iloc[start_idx][args.datecol], args.freq)
             end_label = _format_label(data.iloc[end_idx][args.datecol], args.freq)
@@ -142,8 +139,8 @@ def main(args):
             ]
             V_path = simulate_window_dividend(prices, divs)
             window_ret = V_path[-1] / V_path[0] - 1.0
-            n_periods = len(prices) - 1
-            window_ann = annualise(window_ret, n_periods, periods_per_year)
+            years = (len(prices) - 1) / periods_per_year
+            window_ann = (V_path[-1] / V_path[0]) ** (1 / years) - 1.0
 
             start_label = _format_label(data.iloc[start_idx][args.datecol], args.freq)
             end_label = _format_label(data.iloc[end_idx][args.datecol], args.freq)
