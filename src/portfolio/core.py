@@ -18,7 +18,7 @@ def simulate_leveraged_series(prices: pd.Series, leverage: float) -> pd.Series:
 
 
 def simulate_window(
-    prices: pd.Series, leverage: float, init_value: float = 1.0
+    prices: pd.Series, leverage: float, init_value: float = 1000
 ) -> np.ndarray:
     """
     prices : settlement prices from window start *through* window end
@@ -30,7 +30,7 @@ def simulate_window(
     for i in range(len(prices) - 1):
         P_i = prices.iloc[i]
         Q_i = leverage * V[i] / P_i  # position held during [i, i+1)
-        V[i + 1] = V[i] + Q_i * (prices.iloc[i + 1] - P_i)
+        V[i + 1] = V[i] + (Q_i * (prices.iloc[i + 1] - P_i))
 
     return V
 

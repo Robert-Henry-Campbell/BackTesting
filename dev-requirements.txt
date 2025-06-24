@@ -3,5 +3,6 @@ pandas>=2.1          # DataFrame operations
 numpy>=1.26          # Required by pandas; explicit for clarity
 pytest
 pytest-cov
+tk
 # ───────── Plotting (optional for CLI) ─────────
 matplotlib>=3.8      # Needed only if you call boxplot_returns()
