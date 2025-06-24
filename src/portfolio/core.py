@@ -160,10 +160,10 @@ def simulate_window_dividend(prices: pd.Series, dividends: pd.Series) -> np.ndar
     Examples
     --------
     >>> import pandas as pd
-    >>> prices = pd.Series([100, 110])
-    >>> divs = pd.Series([0.0, 1.0])
+    >>> prices = pd.Series([100, 110, 120])
+    >>> divs = pd.Series([0.0, 1.0, 1.0])
     >>> simulate_window_dividend(prices, divs)
-    array([1.  , 1.11])
+    array([1.  , 1.11,1.221])
     """
 
     V = np.empty(len(prices), dtype=float)

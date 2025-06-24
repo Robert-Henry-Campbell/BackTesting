@@ -85,15 +85,10 @@ def main(args):
 
     if include_underlying:
         for start_idx, end_idx in windows:
-            #prices = data.iloc[
-            #    start_idx : end_idx + 1,
-            #    data.columns.get_loc(args.pricecol),
-            #]
-            #window_ret = underlying_return(prices)
+
             window_ret = data.iloc[end_idx][args.pricecol] / data.iloc[start_idx][args.pricecol] - 1.0
             years = (len(prices) - 1) / periods_per_year
             
-            #window_ann = window_ret / years if years else 0.0
             window_ann = (data.iloc[end_idx][args.pricecol] / data.iloc[start_idx][args.pricecol]) ** (1 / years) - 1.0
 
             start_label = _format_label(data.iloc[start_idx][args.datecol], args.freq)
