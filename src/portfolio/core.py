@@ -169,10 +169,14 @@ def simulate_window_dividend(prices: pd.Series, dividends: pd.Series) -> np.ndar
     V = np.empty(len(prices), dtype=float)
     V[0] = 1.0
     for i in range(len(prices) - 1):
+        """""
         r = (prices.iloc[i + 1] - prices.iloc[i] + dividends.iloc[i + 1]) / prices.iloc[
             i
         ]
         V[i + 1] = V[i] * (1.0 + r)
+        """
+        shares = V[i] / prices.iloc[i]
+        V[i + 1] = (prices.iloc[i + 1] * shares) + (dividends.iloc[i + 1] * shares)
     return V
 
 
