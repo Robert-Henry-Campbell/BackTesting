@@ -170,7 +170,7 @@ def test_multiple_leverage_columns(tmp_path: Path):
     assert not ann_df.isna().any().any()
 
 
-def test_unsorted_input_sorted_output(tmp_path: Path):
+def test_unsorted_input_preserves_order(tmp_path: Path):
     df = pd.DataFrame(
         {
             "date": pd.to_datetime(["2024-01-03", "2024-01-01", "2024-01-02"]),
@@ -194,17 +194,16 @@ def test_unsorted_input_sorted_output(tmp_path: Path):
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 
-    sorted_df = df.sort_values("date").reset_index(drop=True)
     exp_ret, exp_ann, _ = build_expected_frames(
-        sorted_df, 1, 1.0, "date", "price", "day"
+        df.reset_index(drop=True), 1, 1.0, "date", "price", "day"
     )
     pdt.assert_frame_equal(
-        returns_df.sort_values(start_col).reset_index(drop=True),
-        exp_ret.sort_values(start_col).reset_index(drop=True),
+        returns_df.reset_index(drop=True),
+        exp_ret.reset_index(drop=True),
     )
     pdt.assert_frame_equal(
-        ann_df.sort_values(start_col).reset_index(drop=True),
-        exp_ann.sort_values(start_col).reset_index(drop=True),
+        ann_df.reset_index(drop=True),
+        exp_ann.reset_index(drop=True),
     )
 
 

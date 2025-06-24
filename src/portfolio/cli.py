@@ -20,38 +20,18 @@ FREQ_TO_PERIODS = {
 
 
 def _format_label(value, freq):
-    """Format a date-like value according to the frequency.
+    """Return ``value`` unchanged.
 
-    Parameters
-    ----------
-    value : Any
-        The value to format. Can be a string, :class:`~pandas.Timestamp`, or
-        missing (``NaT``/``None``).
-    freq : {"day", "month", "year"}
-        Frequency that determines the output precision.
-
-    Returns
-    -------
-    str | pandas.NA
-        Formatted label or :data:`pandas.NA` if the value is not a valid
-        timestamp.
+    This CLI previously attempted to parse dates and format them according
+    to ``freq``. For full generality we now keep whatever objects appear in
+    the date column so that arbitrary strings are supported.
     """
 
-    ts = pd.to_datetime(value, errors="coerce")
-    if pd.isna(ts):
-        return pd.NA
-
-    if freq == "year":
-        return ts.strftime("%Y")
-    if freq == "month":
-        return ts.strftime("%Y-%m")
-    return ts.strftime("%Y-%m-%d")
+    return value
 
 
 def main(args):
     data = pd.read_csv(args.csv)
-    data.sort_values(args.datecol, inplace=True)
-    data.reset_index(drop=True, inplace=True)
 
     periods_per_year = FREQ_TO_PERIODS.get(args.freq, 12)
 
