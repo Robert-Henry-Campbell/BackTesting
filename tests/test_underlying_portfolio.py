@@ -27,7 +27,7 @@ def test_underlying_portfolio_added(tmp_path):
         underlying=True,
     )
 
-    returns_df, _, _ = main(args)
+    returns_df, _, _, _ = main(args)
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 

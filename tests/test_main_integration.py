@@ -113,8 +113,8 @@ def test_main_integration(tmp_path: Path):
         freq="day",
     )
 
-    # 3. call main (must return the three data frames)
-    returns_df, ann_df, summary_df = main(args)
+    # 3. call main (must return the data frames)
+    returns_df, ann_df, summary_df, _ = main(args)
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 
@@ -157,7 +157,7 @@ def test_multiple_leverage_columns(tmp_path: Path):
         freq="day",
     )
 
-    returns_df, ann_df, _ = main(args)
+    returns_df, ann_df, _, _ = main(args)
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 
@@ -190,7 +190,7 @@ def test_unsorted_input_preserves_order(tmp_path: Path):
         freq="day",
     )
 
-    returns_df, ann_df, _ = main(args)
+    returns_df, ann_df, _, _ = main(args)
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 
@@ -268,7 +268,7 @@ def test_bust_detection(tmp_path: Path):
         freq="day",
     )
 
-    returns_df, _, summary_df = main(args)
+    returns_df, _, summary_df, _ = main(args)
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 
@@ -296,7 +296,7 @@ def test_date_column_override(tmp_path: Path):
         freq="month",
     )
 
-    returns_df, _, _ = main(args)
+    returns_df, _, _, _ = main(args)
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 
