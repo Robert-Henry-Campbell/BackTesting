@@ -26,7 +26,7 @@ def test_manual_returns_single_window(tmp_path):
         freq="month",
     )
 
-    returns_df, _, summary_df = main(args)
+    returns_df, _, summary_df, _ = main(args)
     start_col = f"start_{args.datecol}"
     end_col = f"end_{args.datecol}"
 
